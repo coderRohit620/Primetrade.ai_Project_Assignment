@@ -1,7 +1,4 @@
 import mongoose,{Schema} from "mongoose"
-import jwt from "jsonwebtoken"
-import bcrypt from "bcryptjs"
-import { User } from "./user.model"
 
 const taskSchema = new Schema(
     {
@@ -22,9 +19,9 @@ const taskSchema = new Schema(
         },
         createdBy:{
             type: Schema.Types.ObjectId,
-            ref:User,
+            ref:"User",
             required:true,
-        }
+        },
 
     },
     { timestamps: true}

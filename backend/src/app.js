@@ -13,4 +13,12 @@ app.use(express.urlencoded({extended:true,limit:"16kb"}))
 app.use(express.static("public"))
 app.use(cookieParser())
 
+import authRoutes from "./routes/auth.routes.js";
+import taskRoutes from "./routes/task.routes.js";
+import { errorHandler } from "./middlewares/error.middleware.js";
+
+app.use("/api/v1/auth", authRoutes);
+app.use("/api/v1/tasks", taskRoutes);
+app.use(errorHandler);
+
 export { app }
