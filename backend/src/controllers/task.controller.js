@@ -1,4 +1,3 @@
-import { syncIndexes } from "mongoose";
 import { Task } from "../models/task.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
@@ -8,9 +7,20 @@ import { asyncHandler } from "../utils/asyncHandler.js"
 const createTask = asyncHandler(async (req , res) =>{
     const {title, description } = req.body;
 
-    if (!title) {
+    if (!title?.trim()) {
         throw new ApiError(400, "Title is required");
     }
+
+    // CHECK DUPLICATE TASK
+    const existedTask = await Task.findOne({
+        title,
+        createdBy: req.user._id,
+    });
+
+    if (existedTask) {
+        throw new ApiError(409,"Task already exists");
+    }
+
     const task = await Task.create({
         title,
         description,
@@ -18,7 +28,7 @@ const createTask = asyncHandler(async (req , res) =>{
     });
 
     return res
-        .status(500)
+        .status(201)
         .json(new ApiResponse(201, task, "Task created Successfully"));
 });
 
@@ -33,40 +43,60 @@ const getTasks = asyncHandler(async (req, res) =>{
         .json(new ApiResponse(200, tasks, "Task featched Successfully"))
 })
 
-// Update All Task
+// Update Task
 const updateTask = asyncHandler(async(req,res) => {
-    const { id } = req.params;
+    const {id} = req.params;
 
-    // FIND TASK
-    const task = await Task.findById(id);
+    const { title, description, completed } = req.body;
 
-    if (!task) {
-        throw new ApiError(404, "Task not found");
+    // CHECK EMPTY UPDATE
+    if (
+        title === undefined &&
+        description === undefined &&
+        completed === undefined
+    ) {
+        throw new ApiError(
+            400,
+            "At least one field is required to update"
+        );
+    }
+
+    const existingTask = await Task.findById(id);
+
+    if(!existingTask){
+        throw new ApiError(404,"Task not found");
     }
 
     // CHECK OWNERSHIP
-    if (task.createdBy.toString() !== req.user._id.toString()) {
-        throw new ApiError(403, "Unauthorized action");
+    if (
+        existingTask.createdBy.toString() !==
+        req.user._id.toString()
+    ) {
+        throw new ApiError(
+            403,
+            "Unauthorized action"
+        );
     }
 
-    // UPDATE TASK
-    const updatedTask = await Task.findByIdAndUpdate(
+    const task = await Task.findByIdAndUpdate(
         id,
         req.body,
         {
-            new:true,
+            returnDocument: "after",
             runValidators: true,
         }
     );
 
+
     return res
         .status(200)
-        .json(new ApiResponse(200,updatedTask,"Task updated Successfully"))
+        .json(new ApiResponse(200,task ,"Task updated Successfully"))
 })
 
 // Delete Task
 const deleteTask = asyncHandler(async(req,res) => {
-    const {id } = req.params;
+    const { id } = req.params;
+
 
     const task = await Task.findById(id);
 
@@ -82,7 +112,7 @@ const deleteTask = asyncHandler(async(req,res) => {
 
     return res
         .status(200)
-        .json(new ApiResponse(200,{},"Task deleted Successfully"));
+        .json(new ApiResponse(200,{},"Task deleted successfully"));
 })
 
 
