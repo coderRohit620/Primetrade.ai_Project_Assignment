@@ -15,7 +15,7 @@ app.use(cookieParser())
 
 import authRoutes from "./routes/auth.routes.js";
 import taskRoutes from "./routes/task.routes.js";
-import { errorHandler } from "./middlewares/error.middleware.js";
+import { errorHandler } from "./middleware/error.middleware.js";
 
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/tasks", taskRoutes);

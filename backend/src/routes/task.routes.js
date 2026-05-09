@@ -1,4 +1,6 @@
 import { Router } from "express";
+import { verifyJWT } from "../middleware/auth.middleware.js";
+
 
 import {
   createTask,
@@ -7,7 +9,6 @@ import {
   deleteTask,
 } from "../controllers/task.controller.js";
 
-import { verifyJWT } from "../middlewares/auth.middleware.js";
 
 const router = Router();
 
