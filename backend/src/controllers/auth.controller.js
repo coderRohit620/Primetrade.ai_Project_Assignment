@@ -2,10 +2,10 @@ import {User } from "../models/user.model.js"
 import { ApiError } from "../utils/ApiError.js"
 import { ApiResponse } from "../utils/ApiResponse.js"
 import { asyncHandler } from "../utils/asyncHandler.js"
+import jwt from "jsonwebtoken";
 
 
-
-const generateAccessAndRefereshToken = async (userId) => {
+const generateAccessAndRefreshToken = async (userId) => {
   try {
     const user = await User.findById(userId);
     const accessToken = user.generateAccessToken();
@@ -16,6 +16,7 @@ const generateAccessAndRefereshToken = async (userId) => {
 
     return { accessToken, refreshToken };
   } catch (error) {
+    console.log(error)
     throw new ApiError(
       500,
       "something went wrong while generation referesh and access token"
@@ -59,10 +60,10 @@ const registerUser = asyncHandler(async (req, res) => {
 });
 
 const loginUser = asyncHandler(async (req, res) => {
-    const {email, username,password} = req.body
+    const {email, username , password} = req.body
 
-    if(!username && !Password) {
-        throw new ApiError(400, "Username and Password is required")
+    if( !username && !email || !password) {
+        throw new ApiError(400, "Username or email and Password is required")
     }
 
     const user = await User.findOne({
@@ -82,7 +83,7 @@ const loginUser = asyncHandler(async (req, res) => {
     }
 
     // 5.access or refresh token.
-    const { accessToken, refreshToken } = await generateAccessAndRefereshToken(
+    const { accessToken, refreshToken } = await generateAccessAndRefreshToken(
         user._id
     );
 
@@ -168,7 +169,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
     };
 
     const { accessToken, refreshToken: newRefreshToken } =
-      await generateAccessAndRefereshToken(user._id);
+      await generateAccessAndRefreshToken(user._id);
 
     return res
       .status(200)

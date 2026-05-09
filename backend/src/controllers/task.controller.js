@@ -37,17 +37,27 @@ const getTasks = asyncHandler(async (req, res) =>{
 const updateTask = asyncHandler(async(req,res) => {
     const { id } = req.params;
 
+    // FIND TASK
+    const task = await Task.findById(id);
+
+    if (!task) {
+        throw new ApiError(404, "Task not found");
+    }
+
+    // CHECK OWNERSHIP
+    if (task.createdBy.toString() !== req.user._id.toString()) {
+        throw new ApiError(403, "Unauthorized action");
+    }
+
+    // UPDATE TASK
     const updatedTask = await Task.findByIdAndUpdate(
         id,
         req.body,
         {
             new:true,
+            runValidators: true,
         }
     );
-
-    if(!updatedTask){
-        throw new ApiError(404, "Task not found");
-    }
 
     return res
         .status(200)
@@ -57,11 +67,18 @@ const updateTask = asyncHandler(async(req,res) => {
 // Delete Task
 const deleteTask = asyncHandler(async(req,res) => {
     const {id } = req.params;
-    const task = await Task.findByIdAndDelete(id);
 
-    if(!task){
-        throw new ApiError(404," Task not found")
-    }
+    const task = await Task.findById(id);
+
+        if (!task) {
+            throw new ApiError(404, "Task not found");
+        }
+
+        if (task.createdBy.toString() !== req.user._id.toString()) {
+            throw new ApiError(403, "Unauthorized action");
+        }
+
+        await Task.findByIdAndDelete(id);
 
     return res
         .status(200)

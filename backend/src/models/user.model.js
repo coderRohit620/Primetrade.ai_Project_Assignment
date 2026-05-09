@@ -34,8 +34,8 @@ const userSchema = new Schema(
 
 // Hash Password Before Save
 userSchema.pre("save", async function() {
-    if(!this.isModified("password")) return;
-    this.password = await bcrypt.hash(this.password, 10)
+    if(!this.isModified("password")) return ;
+    this.password = await bcrypt.hash(this.password, 10);
 })
 
 // Compare Password
@@ -54,7 +54,7 @@ userSchema.methods.generateAccessToken = function(){
         },
         process.env.ACCESS_TOKEN_SECRET,
         {
-            expiresIn:process.env.ACCESS_TOKEN_EXPIRATION
+            expiresIn:process.env.ACCESS_TOKEN_EXPIRY
         }
     )
 }
@@ -67,8 +67,9 @@ userSchema.methods.generateRefreshToken = function(){
         },
         process.env.REFRESH_TOKEN_SECRET,
         {
-            expiresIn:process.env.REFRESH_TOKEN_EXPIRATION
+            expiresIn:process.env.REFRESH_TOKEN_EXPIRY
         }
     )
 }
+
 export const User = mongoose.model("User", userSchema)

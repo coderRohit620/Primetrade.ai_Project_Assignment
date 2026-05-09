@@ -17,7 +17,7 @@ router.route("/")
   .get(verifyJWT, getTasks);
 
 router.route("/:id")
-  .put(verifyJWT, updateTask)
+  .patch(verifyJWT, updateTask)
   .delete(verifyJWT, deleteTask);
 
 export default router;
